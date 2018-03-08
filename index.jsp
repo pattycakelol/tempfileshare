@@ -66,7 +66,7 @@
                 // this loop should never be run, but just in case, we will change the UUID in case a duplicate is found
                 while (ff.exists()) { 
                     uniqueID = UUID.randomUUID().toString().replace("-", "");
-                    directory = "C:/xampp/tomcat/webapps/test/tempfileshare/" + uniqueID + "/" + saveFile;
+                    directory = "C:/xampp/tomcat/webapps/tempfileshare/" + uniqueID + "/" + saveFile;
                     ff = new File(directory);
                 }
 
