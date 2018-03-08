@@ -58,7 +58,7 @@
                 // make unique dir for the file
 
                 String uniqueID = UUID.randomUUID().toString().replace("-", "");
-                String directory = "C:/xampp/tomcat/webapps/test/uploads/" + uniqueID;
+                String directory = "C:/xampp/tomcat/webapps/tempfileshare/uploads/" + uniqueID;
                 File ff = new File(directory);
 
                 // if directory does not exist (and it shouldnt since it uses UUID), make directory
@@ -66,7 +66,7 @@
                 // this loop should never be run, but just in case, we will change the UUID in case a duplicate is found
                 while (ff.exists()) { 
                     uniqueID = UUID.randomUUID().toString().replace("-", "");
-                    directory = "C:/xampp/tomcat/webapps/tempfileshare/" + uniqueID + "/" + saveFile;
+                    directory = "C:/xampp/tomcat/webapps/tempfileshare/uploads/" + uniqueID + "/" + saveFile;
                     ff = new File(directory);
                 }
 
