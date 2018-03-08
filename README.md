@@ -1,5 +1,4 @@
 # tempfileshare
-A small ephemeral file sharing site personal project of mine
 
 This website allows users to upload files to the website's database.
 The catch is that these files are temporary; they are limited to 1 download per link created for that file (may add feature to change # of times file can be downloaded)
