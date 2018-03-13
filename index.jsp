@@ -8,6 +8,10 @@
     <body>
         <h1>Uploading files</h1>
         <form name="uploadForm" action="index.jsp" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" value="" width="100"/><br>
+            Number of allowed downloads(max: 99): <input type="number" name="alloweddownloads" min ="1" max="99"><br>
+            <input type="submit" value="Upload File" name="submit" /><br>
+
             <% 
             String saveFile = new String();
             String contentType = request.getContentType();
@@ -45,6 +49,7 @@
 
                 int pos;
 
+                // very specific
                 pos = file.indexOf("filename=\"");
                 pos = file.indexOf("\n", pos) + 1;
                 pos = file.indexOf("\n", pos) + 1;
@@ -85,11 +90,13 @@
                     
                     Class.forName("com.mysql.jdbc.Driver");
                     Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/upload_db", "root", "root");
-                    String query = "insert into uploads (filename, type, path) values (?,?,?)";
+                    String query = "insert into uploads (filename, type, path, alloweddownloads) values (?,?,?,?)";
                     PreparedStatement ps = conn.prepareStatement(query);
                     ps.setString(1, saveFile.substring(0, saveFile.lastIndexOf(".")));
                     ps.setString(2, saveFile.substring(saveFile.lastIndexOf(".") + 1, saveFile.length()));
                     ps.setString(3, directory.replace("/", "\\"));
+                    out.print("alloweddownloads = " + request.getParameter("alloweddownloads") + "<br>");
+                    ps.setInt(4, Integer.parseInt(request.getParameter("alloweddownloads")));
                     ps.execute();
                     conn.close();
                     
@@ -102,8 +109,7 @@
 
             }
             %>
-            <input type="file" name="file" value="" width="100"/>
-            <input type="submit" value="Upload File" name="submit" />
+
         </form>
     </body>
 </html>
