@@ -8,7 +8,7 @@
     <body>
         <h1>Uploading files</h1>
         <form name="uploadForm" action="index.jsp" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" value="" width="100"/><br>
+            <input type="file" name="file" value="" width="100"/><br><br>
             <input type="submit" value="Upload File" name="submit" /><br>
 
             <% 
@@ -60,24 +60,21 @@
                 int endPos = ((file.substring(0, boundaryLocation)).getBytes()).length;
 
                 // make unique dir for the file
-
+                String uploadDir = "C:/xampp/tomcat/webapps/tempfileshare";
                 String uniqueID = UUID.randomUUID().toString().replace("-", "");
-                String directory = "C:/xampp/tomcat/webapps/tempfileshare/uploads/" + uniqueID;
-                File ff = new File(directory);
+                File ff = new File(uploadDir + "/" + uniqueID);
 
                 // if directory does not exist (and it shouldnt since it uses UUID), make directory
 
                 // this loop should never be run, but just in case, we will change the UUID in case a duplicate is found
                 while (ff.exists()) { 
                     uniqueID = UUID.randomUUID().toString().replace("-", "");
-                    directory = "C:/xampp/tomcat/webapps/tempfileshare/uploads/" + uniqueID + "/" + saveFile;
-                    ff = new File(directory);
+                    ff = new File(uploadDir + "/" + uniqueID + "/" + saveFile);
                 }
 
                 // directory does not exist, create it:
                 ff.mkdirs();
-                directory = directory + "/" + saveFile;
-                ff = new File(directory);
+                ff = new File(uploadDir + "/" + uniqueID + "/" + saveFile);
                 try {
                     // put file onto machine
                     FileOutputStream fileOut = new FileOutputStream(ff);
@@ -93,10 +90,26 @@
                     PreparedStatement ps = conn.prepareStatement(query);
                     ps.setString(1, saveFile.substring(0, saveFile.lastIndexOf(".")));
                     ps.setString(2, saveFile.substring(saveFile.lastIndexOf(".") + 1, saveFile.length()));
-                    ps.setString(3, directory.replace("/", "\\"));
+                    ps.setString(3, (uploadDir + "/" + uniqueID + "/" + saveFile).replace("/", "\\"));
                     ps.execute();
                     conn.close();
                     
+                    // generate new file for the 
+                    String downloadPath = uploadDir + "/" + uniqueID;
+                    File downloadIndex = new File(uploadDir + "/" + uniqueID + "/index.jsp");
+                    PrintWriter out1 = new PrintWriter(new FileWriter(downloadIndex));
+                    out1.write("<html>");
+
+                    out1.write("<head>");
+                    out1.write("<title>dl: " + uniqueID + "</title>");
+                    out1.write("</head>");
+
+                    out1.write("<body>");
+                    out1.write("test index file for download: " + uniqueID);
+                    out1.write("</body>");
+                    
+                    out1.write("</html>");
+                    out1.close();
 
                 } catch (FileNotFoundException fnfe) {
                     out.print("Please select a file to upload<br>"); // dont want to show file paths to the user
