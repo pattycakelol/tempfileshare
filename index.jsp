@@ -9,7 +9,7 @@
         <h1>Uploading files</h1>
         <form name="uploadForm" action="index.jsp" method="POST" enctype="multipart/form-data">
             <input type="file" name="file" value="" width="100"/><br><br>
-            <input type="submit" value="Upload File" name="submit" /><br>
+            <input type="submit" onclick="document.location = '/tempfileshare/'"value="Upload File" name="submit" /><br>
 
             <% 
             String saveFile = new String();
@@ -107,7 +107,7 @@
                     out1.write("<body>");
                     out1.write("test index file for download: " + uniqueID);
                     out1.write("</body>");
-                    
+
                     out1.write("</html>");
                     out1.close();
 
