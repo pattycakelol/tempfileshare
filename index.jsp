@@ -6,9 +6,9 @@
         <title>File Upload Test</title>
     </head>
     <body>
-        <h1>Uploading files</h1>
+        <h1>Upload a file</h1>
         <form name="uploadForm" action="index.jsp" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" value="" width="100"/><br>
+            <input type="file" name="file" value="" width="100"/><br><br>
             <input type="submit" value="Upload File" name="submit" /><br>
 
             <% 
@@ -16,7 +16,7 @@
             String contentType = request.getContentType();
 
             if((contentType != null) && (contentType.indexOf("multipart/form-data") >= 0)) {
-
+            
                 // convert uploaded file into array of bytes
 
                 DataInputStream in = new DataInputStream(request.getInputStream());
