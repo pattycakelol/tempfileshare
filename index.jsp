@@ -99,19 +99,19 @@
                     String downloadPath = uploadDir + "/" + uniqueID;
                     File downloadIndex = new File(uploadDir + "/" + uniqueID + "/index.jsp");
                     PrintWriter out1 = new PrintWriter(new FileWriter(downloadIndex));
-                    out1.println("<" + "%@page import=\"java.io.ServletOutputStream\"%" + ">");
+                    out1.println("<" + "%@page import=\"java.io.*, java.sql.*\"%" + ">");
                     out1.println("<" + "%");
 
                     out1.println("Class.forName(\"com.mysql.jdbc.Driver\");");
                     out1.println("Connection conn = DriverManager.getConnection(\"jdbc:mysql://localhost:3306/upload_db\", \"root\", \"root\");");
-                    out1.println("String query = \"select * from uploads where file_id = ?)\";");
-                    out1.println("//PreparedStatement ps = conn.prepareStatement(query);");
-                    out1.println("//ps.setString(1, " + uniqueID + ");");
-                    out1.println("//ps.execute();");
-                    out1.println("ResultSet rs = ps.executeQuery(query)");
-                    out1.println("if (rs.next()) {");
-                    out1.println("    "); // uniqueID exists in db, continue with download
-                    out1.println("} else out.print(\"This file has expired.\")");
+                    out1.println("String query = \"delete from uploads where file_id = ?\";");
+                    out1.println("PreparedStatement ps = conn.prepareStatement(query);");
+                    out1.println("ps.setString(1, \"" + uniqueID + "\");");
+                    out1.println("int i = ps.executeUpdate();");
+                    out1.println("//ResultSet rs = ps.executeQuery();");
+                    out1.println("//if (rs.next()) {");
+                    out1.println("//    out.print(\"hello\");"); // uniqueID exists in db, continue with download
+                    out1.println("//} else out.print(\"This file has expired.\");");
                     out1.println("");
                     out1.println("");
                     out1.println("conn.close();");
@@ -120,7 +120,7 @@
                     out1.println("response.setContentType(\"application/octet-stream\");");
                     out1.println("String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
                     out1.println("response.setHeader(\"Content-Disposition\", header);");
-                    out1.println("File downloadFile = new File(file);");
+                    out1.println("File downloadFile = new File(file);") ;
                     out1.println("InputStream in = null;");
                     out1.println("ServletOutputStream outs = response.getOutputStream();");
                     out1.println("try {");
