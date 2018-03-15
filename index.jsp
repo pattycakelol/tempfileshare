@@ -102,20 +102,21 @@
                     out1.println("<" + "%@page import=\"java.io.*, java.sql.*\"%" + ">");
                     out1.println("<" + "%");
 
+                    // delete from database
                     out1.println("Class.forName(\"com.mysql.jdbc.Driver\");");
                     out1.println("Connection conn = DriverManager.getConnection(\"jdbc:mysql://localhost:3306/upload_db\", \"root\", \"root\");");
-                    out1.println("String query = \"delete from uploads where file_id = ?\";");
+                    out1.println("String query = \"select downloads from uploads where file_id = ?\";");
                     out1.println("PreparedStatement ps = conn.prepareStatement(query);");
                     out1.println("ps.setString(1, \"" + uniqueID + "\");");
-                    out1.println("int i = ps.executeUpdate();");
-                    out1.println("//ResultSet rs = ps.executeQuery();");
-                    out1.println("//if (rs.next()) {");
-                    out1.println("//    out.print(\"hello\");"); // uniqueID exists in db, continue with download
-                    out1.println("//} else out.print(\"This file has expired.\");");
+                    out1.println("ResultSet rs = ps.executeQuery();");
+                    out1.println("if (rs.next()) {");
+                    out1.println("    if (rs.getInt(\"downloads\"));"); // uniqueID exists in db, continue with download
+                    out1.println("} else out.print(\"This file has expired.\");");
                     out1.println("");
                     out1.println("");
                     out1.println("conn.close();");
 
+                    // download file
                     out1.println("String file = \"" + uploadDir + "/" + uniqueID + "/" + saveFile + "\";");
                     out1.println("response.setContentType(\"application/octet-stream\");");
                     out1.println("String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
@@ -138,6 +139,7 @@
                     out1.println("in.close();");
                     out1.println("%" + ">");
 
+                    // delete actual file from server, but keep the file folder with the generated index
                     out1.close();
 
                 } catch (FileNotFoundException fnfe) {
