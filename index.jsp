@@ -7,9 +7,9 @@
     </head>
     <body>
         <h1>Uploading files</h1>
-        <form name="uploadForm" action="index.jsp" method="POST" enctype="multipart/form-data">
+        <form name="uploadForm" action="/tempfileshare/" method="POST" enctype="multipart/form-data">
             <input type="file" name="file" value="" width="100"/><br><br>
-            <input type="submit" onclick="document.location = '/tempfileshare/'"value="Upload File" name="submit" /><br>
+            <button type="submit"  value="Upload File" name="submit">Upload File</button><br>
 
             <% 
             String saveFile = new String();
@@ -61,14 +61,14 @@
 
                 // make unique dir for the file
                 String uploadDir = "C:/xampp/tomcat/webapps/tempfileshare";
-                String uniqueID = UUID.randomUUID().toString().replace("-", "");
+                String uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
                 File ff = new File(uploadDir + "/" + uniqueID);
 
                 // if directory does not exist (and it shouldnt since it uses UUID), make directory
 
                 // this loop should never be run, but just in case, we will change the UUID in case a duplicate is found
                 while (ff.exists()) { 
-                    uniqueID = UUID.randomUUID().toString().replace("-", "");
+                    uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
                     ff = new File(uploadDir + "/" + uniqueID + "/" + saveFile);
                 }
 
@@ -86,29 +86,58 @@
                     
                     Class.forName("com.mysql.jdbc.Driver");
                     Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/upload_db", "root", "root");
-                    String query = "insert into uploads (filename, type, path) values (?,?,?)";
+                    String query = "insert into uploads (file_id, filename, type, path) values (?,?,?,?)";
                     PreparedStatement ps = conn.prepareStatement(query);
-                    ps.setString(1, saveFile.substring(0, saveFile.lastIndexOf(".")));
-                    ps.setString(2, saveFile.substring(saveFile.lastIndexOf(".") + 1, saveFile.length()));
-                    ps.setString(3, (uploadDir + "/" + uniqueID + "/" + saveFile).replace("/", "\\"));
+                    ps.setString(1, uniqueID);
+                    ps.setString(2, saveFile.substring(0, saveFile.lastIndexOf(".")));
+                    ps.setString(3, saveFile.substring(saveFile.lastIndexOf(".") + 1, saveFile.length()));
+                    ps.setString(4, uploadDir + "/" + uniqueID + "/" + saveFile);
                     ps.execute();
                     conn.close();
                     
-                    // generate new file for the 
+                    // generate new index to download the file
                     String downloadPath = uploadDir + "/" + uniqueID;
                     File downloadIndex = new File(uploadDir + "/" + uniqueID + "/index.jsp");
                     PrintWriter out1 = new PrintWriter(new FileWriter(downloadIndex));
-                    out1.write("<html>");
+                    out1.println("<" + "%@page import=\"java.io.ServletOutputStream\"%" + ">");
+                    out1.println("<" + "%");
 
-                    out1.write("<head>");
-                    out1.write("<title>dl: " + uniqueID + "</title>");
-                    out1.write("</head>");
+                    out1.println("Class.forName(\"com.mysql.jdbc.Driver\");");
+                    out1.println("Connection conn = DriverManager.getConnection(\"jdbc:mysql://localhost:3306/upload_db\", \"root\", \"root\");");
+                    out1.println("String query = \"select * from uploads where file_id = ?)\";");
+                    out1.println("//PreparedStatement ps = conn.prepareStatement(query);");
+                    out1.println("//ps.setString(1, " + uniqueID + ");");
+                    out1.println("//ps.execute();");
+                    out1.println("ResultSet rs = ps.executeQuery(query)");
+                    out1.println("if (rs.next()) {");
+                    out1.println("    "); // uniqueID exists in db, continue with download
+                    out1.println("} else out.print(\"This file has expired.\")");
+                    out1.println("");
+                    out1.println("");
+                    out1.println("conn.close();");
 
-                    out1.write("<body>");
-                    out1.write("test index file for download: " + uniqueID);
-                    out1.write("</body>");
+                    out1.println("String file = \"" + uploadDir + "/" + uniqueID + "/" + saveFile + "\";");
+                    out1.println("response.setContentType(\"application/octet-stream\");");
+                    out1.println("String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
+                    out1.println("response.setHeader(\"Content-Disposition\", header);");
+                    out1.println("File downloadFile = new File(file);");
+                    out1.println("InputStream in = null;");
+                    out1.println("ServletOutputStream outs = response.getOutputStream();");
+                    out1.println("try {");
+                    out1.println("    in = new BufferedInputStream(new FileInputStream(file));");
+                    out1.println("    int ch;");
+                    out1.println("    while((ch = in.read()) != -1) {");
+                    out1.println("        outs.print((char)ch);");
+                    out1.println("    }");
+                    out1.println("}");
+                    out1.println("finally {");
+                    out1.println("    if (in != null) in.close();");
+                    out1.println("}");
+                    out1.println("outs.flush();");
+                    out1.println("outs.close();");
+                    out1.println("in.close();");
+                    out1.println("%" + ">");
 
-                    out1.write("</html>");
                     out1.close();
 
                 } catch (FileNotFoundException fnfe) {
