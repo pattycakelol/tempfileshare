@@ -61,10 +61,8 @@
 
                 // make unique dir for the file
                 String uploadDir = "C:/xampp/tomcat/webapps/tempfileshare";
-                String uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
+                String uniqueID = UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase();
                 File ff = new File(uploadDir + "/" + uniqueID);
-
-                // if directory does not exist (and it shouldnt since it uses UUID), make directory
 
                 // this loop should never be run, but just in case, we will change the UUID in case a duplicate is found
                 while (ff.exists()) { 
@@ -92,7 +90,7 @@
                     ps.setString(2, saveFile.substring(0, saveFile.lastIndexOf(".")));
                     ps.setString(3, saveFile.substring(saveFile.lastIndexOf(".") + 1, saveFile.length()));
                     ps.setString(4, uploadDir + "/" + uniqueID + "/" + saveFile);
-                    ps.execute();
+                    ps.executeUpdate();
                     conn.close();
                     
                     // generate new index to download the file
@@ -100,7 +98,7 @@
                     File downloadIndex = new File(uploadDir + "/" + uniqueID + "/index.jsp");
                     PrintWriter out1 = new PrintWriter(new FileWriter(downloadIndex));
                     out1.println("<" + "%@page import=\"java.io.*, java.sql.*\"%" + ">");
-                    out1.println("<" + "%");
+                    out1.println("<html>\n<" + "%");
 
                     // delete from database
                     out1.println("Class.forName(\"com.mysql.jdbc.Driver\");");
@@ -109,35 +107,42 @@
                     out1.println("PreparedStatement ps = conn.prepareStatement(query);");
                     out1.println("ps.setString(1, \"" + uniqueID + "\");");
                     out1.println("ResultSet rs = ps.executeQuery();");
-                    out1.println("if (rs.next()) {");
-                    out1.println("    if (rs.getInt(\"downloads\"));"); // uniqueID exists in db, continue with download
-                    out1.println("} else out.print(\"This file has expired.\");");
-                    out1.println("");
-                    out1.println("");
-                    out1.println("conn.close();");
+                    out1.println("if (rs.next()) {"); // uniqueID exists in db
+                    out1.println("    if (rs.getInt(\"downloads\") > 0) {"); // has 1 or more allowed downloads
+                    out1.println("        query = \"update uploads set downloads = \" + (rs.getInt(\"downloads\") - 1) + \" where file_id = \\\"" + uniqueID + "\\\" \";");
+                    out1.println("        ps = conn.prepareStatement(query);");
+                    out1.println("        ps.executeUpdate();");
 
                     // download file
-                    out1.println("String file = \"" + uploadDir + "/" + uniqueID + "/" + saveFile + "\";");
-                    out1.println("response.setContentType(\"application/octet-stream\");");
-                    out1.println("String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
-                    out1.println("response.setHeader(\"Content-Disposition\", header);");
-                    out1.println("File downloadFile = new File(file);") ;
-                    out1.println("InputStream in = null;");
-                    out1.println("ServletOutputStream outs = response.getOutputStream();");
-                    out1.println("try {");
-                    out1.println("    in = new BufferedInputStream(new FileInputStream(file));");
-                    out1.println("    int ch;");
-                    out1.println("    while((ch = in.read()) != -1) {");
-                    out1.println("        outs.print((char)ch);");
-                    out1.println("    }");
-                    out1.println("}");
-                    out1.println("finally {");
-                    out1.println("    if (in != null) in.close();");
-                    out1.println("}");
-                    out1.println("outs.flush();");
-                    out1.println("outs.close();");
-                    out1.println("in.close();");
-                    out1.println("%" + ">");
+                    out1.println("        String file = \"" + uploadDir + "/" + uniqueID + "/" + saveFile + "\";");
+                    out1.println("        response.setContentType(\"application/octet-stream\");");
+                    out1.println("        String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
+                    out1.println("        response.setHeader(\"Content-Disposition\", header);");
+                    out1.println("        File downloadFile = new File(file);") ;
+                    out1.println("        InputStream in = null;");
+                    out1.println("        ServletOutputStream outs = response.getOutputStream();");
+                    out1.println("        try {");
+                    out1.println("            in = new BufferedInputStream(new FileInputStream(file));");
+                    out1.println("            int ch;");
+                    out1.println("            while((ch = in.read()) != -1) {");
+                    out1.println("                outs.print((char)ch);");
+                    out1.println("            }");
+                    out1.println("        }");
+                    out1.println("        finally {");
+                    out1.println("            if (in != null) in.close();");
+                    out1.println("        }");
+                    out1.println("        outs.flush();");
+                    out1.println("        outs.close();");
+                    out1.println("        in.close();");
+
+                    // if downloads is now 0, delete file from server (but keep the index file)
+
+
+                    out1.println("    } else out.print(\"This file has expired (no more downloads left).<br><a href=\\\"/tempfileshare\\\">Back to Home</a>\");");
+                    out1.println("} else out.print(\"This file does not exist.<br><a href=\\\"/tempfileshare\\\">Back to Home</a>\");");
+                    out1.println("conn.close();");
+
+                    out1.println("%" + ">\n</html>");
 
                     // delete actual file from server, but keep the file folder with the generated index
                     out1.close();
