@@ -137,6 +137,7 @@
 
                     // if downloads is now 0, delete file from server (but keep the index file)
 
+                    out1.println("        downloadFile.delete();");
 
                     out1.println("    } else out.print(\"This file has expired (no more downloads left).<br><a href=\\\"/tempfileshare\\\">Back to Home</a>\");");
                     out1.println("} else out.print(\"This file does not exist.<br><a href=\\\"/tempfileshare\\\">Back to Home</a>\");");
