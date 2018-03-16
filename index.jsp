@@ -14,6 +14,7 @@
             <% 
             String saveFile = new String();
             String contentType = request.getContentType();
+            boolean uploadSuccess = false;
 
             if((contentType != null) && (contentType.indexOf("multipart/form-data") >= 0)) {
 
@@ -92,6 +93,7 @@
                     ps.setString(4, uploadDir + "/" + uniqueID + "/" + saveFile);
                     ps.executeUpdate();
                     conn.close();
+                    uploadSuccess = true;
                     
                     // generate new index to download the file
                     String downloadPath = uploadDir + "/" + uniqueID;
@@ -113,7 +115,7 @@
                     out1.println("        ps = conn.prepareStatement(query);");
                     out1.println("        ps.executeUpdate();");
 
-                    // download file
+                    // download file in new index
                     out1.println("        String file = \"" + uploadDir + "/" + uniqueID + "/" + saveFile + "\";");
                     out1.println("        response.setContentType(\"application/octet-stream\");");
                     out1.println("        String header = \"Atachment; Filename=\\\"" + saveFile + "\\\"\";");
@@ -154,6 +156,8 @@
                     out.print(e);
                 }
 
+                if (uploadSuccess) out.print("<" + "script"+ ">" + "alert(\"Your file download link has been sent to " + 
+                    request.getRequestURI() + uniqueID + "\");" + "<" + "/script>");
             }
             %>
 
