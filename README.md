@@ -14,3 +14,7 @@ QoL:
  - add encryption of file uploaded to database
  - add # of allowed downloads for file (however, I don't want to have it stay forever since I have limited space)
  - add option to select an expiration date (may have a default expiration date on every file uploaded as well)
+
+
+
+I realized that jsp is a terrible way of doing this and things like php make it much easier, so I probably wont be continuing this particular project.
